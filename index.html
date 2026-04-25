@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartMaxx | Official Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .modal-view { transition: transform 0.3s ease-in-out; transform: translateX(100%); }
+        .modal-view.active { transform: translateX(0); }
+        .modal-up { transition: transform 0.3s ease-in-out; transform: translateY(100%); }
+        .modal-up.active { transform: translateY(0); }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .secure-badge { background: linear-gradient(90deg, #065f46 0%, #059669 100%); }
+        .footer-shadow { shadow: 0 -4px 15px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body class="pb-32">
+
+    <div class="secure-badge text-white text-[10px] py-1.5 flex justify-center items-center gap-4 font-bold uppercase tracking-wider">
+        <span><i class="fas fa-shield-check mr-1"></i> Site 100% Confiável</span>
+        <span><i class="fas fa-lock mr-1"></i> Compra Segura</span>
+    </div>
+
+    <header class="bg-white shadow-sm sticky top-0 z-50 px-4 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3" onclick="location.reload()">
+            <div class="w-10 h-10 bg-blue-700 rounded-xl flex items-center justify-center text-white shadow-lg">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <h1 class="font-black text-xl text-slate-800 tracking-tighter italic">SMARTMAXX</h1>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="openAuthModal()" class="p-2 text-slate-400"><i class="fas fa-cog"></i></button>
+            <button onclick="toggleCart()" class="relative p-2 bg-slate-100 rounded-full text-slate-700">
+                <i class="fas fa-shopping-bag text-xl"></i>
+                <span id="cart-count" class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="grid grid-cols-2 gap-4 p-4" id="product-grid"></main>
+
+    <footer class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-40 flex justify-around items-center footer-shadow">
+        <a href="https://wa.me/5573998630214" target="_blank" class="flex flex-col items-center gap-1 text-green-600">
+            <i class="fab fa-whatsapp text-2xl"></i>
+            <span class="text-[10px] font-bold uppercase">WhatsApp</span>
+        </a>
+        <a href="https://instagram.com/smartmaxx_" target="_blank" class="flex flex-col items-center gap-1 text-pink-600">
+            <i class="fab fa-instagram text-2xl"></i>
+            <span class="text-[10px] font-bold uppercase">Instagram</span>
+        </a>
+    </footer>
+
+    <div id="product-page" class="fixed inset-0 z-[80] bg-white modal-view hidden flex flex-col">
+        <div class="p-4 flex justify-between items-center border-b">
+            <button onclick="closeProductPage()" class="text-slate-800 p-2"><i class="fas fa-arrow-left text-xl"></i></button>
+            <span class="text-xs font-bold text-blue-600 uppercase tracking-widest italic">SmartMaxx Exclusive</span>
+            <div class="w-10"></div>
+        </div>
+        <div class="flex-1 overflow-y-auto">
+            <div class="bg-slate-50 p-8 flex justify-center min-h-[300px]">
+                <img id="view-img" src="" class="max-h-[250px] object-contain drop-shadow-2xl">
+            </div>
+            <div class="p-6 space-y-4">
+                <h2 id="view-title" class="text-2xl font-black text-slate-800 leading-tight"></h2>
+                <div id="view-price" class="text-3xl font-black text-blue-700"></div>
+                <div class="flex items-center gap-4 py-4 border-y border-slate-100">
+                    <span class="font-bold text-slate-500">Qtd:</span>
+                    <div class="flex items-center gap-4 bg-slate-100 rounded-full px-4 py-1">
+                        <button onclick="changeViewQty(-1)" class="text-xl font-bold p-2">-</button>
+                        <span id="view-qty" class="font-black text-lg w-6 text-center">1</span>
+                        <button onclick="changeViewQty(1)" class="text-xl font-bold p-2 text-blue-600">+</button>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <h4 class="font-bold text-slate-800 uppercase text-[10px] tracking-widest">Detalhes do Produto</h4>
+                    <p id="view-desc" class="text-slate-500 text-sm leading-relaxed"></p>
+                </div>
+            </div>
+        </div>
+        <div class="p-6 border-t bg-white">
+            <button id="add-to-cart-btn" class="w-full bg-blue-700 text-white py-5 rounded-[20px] font-black text-lg shadow-lg shadow-blue-100">
+                ADICIONAR AO CARRINHO
+            </button>
+        </div>
+    </div>
+
+    <div id="cart-modal" class="fixed inset-0 z-[90] bg-black/60 hidden opacity-0 transition-opacity duration-300">
+        <div class="modal-up fixed bottom-0 left-0 right-0 bg-white rounded-t-[40px] h-[90vh] flex flex-col">
+            <div class="p-6 flex justify-between items-center border-b">
+                <h3 class="text-xl font-black text-slate-800">MEU PEDIDO</h3>
+                <button onclick="toggleCart()" class="text-slate-400 p-2"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                <div id="cart-items-list" class="space-y-4"></div>
+                <div class="space-y-4">
+                    <h4 class="font-bold text-slate-700 uppercase text-[10px]">Entrega e Pagamento</h4>
+                    <select id="c-pay" class="w-full p-4 bg-slate-100 rounded-2xl font-bold text-slate-600 outline-none">
+                        <option>Pix</option>
+                        <option>Cartão de Crédito</option>
+                        <option>Boleto</option>
+                    </select>
+                    <textarea id="c-addr" placeholder="Endereço completo para entrega" class="w-full p-4 bg-slate-100 rounded-2xl h-24 outline-none"></textarea>
+                </div>
+            </div>
+            <div class="p-6 border-t bg-white shadow-2xl">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-slate-400 font-bold uppercase text-xs">Total</span>
+                    <span id="cart-total" class="text-3xl font-black text-blue-700"></span>
+                </div>
+                <button onclick="finishOrder()" class="w-full bg-green-500 text-white py-5 rounded-[20px] font-black text-lg flex items-center justify-center gap-3">
+                    FECHAR VIA WHATSAPP <i class="fab fa-whatsapp text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="fixed inset-0 z-[100] bg-black/80 hidden flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
+            <h2 class="text-xl font-bold text-center italic tracking-tight">SMARTMAXX ADMIN</h2>
+            <input type="text" id="login-user" placeholder="Usuário" class="w-full p-4 bg-slate-100 rounded-xl outline-none">
+            <input type="password" id="login-pass" placeholder="Senha" class="w-full p-4 bg-slate-100 rounded-xl outline-none">
+            <button onclick="handleLogin()" class="w-full bg-blue-700 text-white py-4 rounded-xl font-bold">Entrar</button>
+            <button onclick="document.getElementById('auth-modal').classList.add('hidden')" class="w-full text-slate-400 py-2">Voltar</button>
+        </div>
+    </div>
+
+    <div id="admin-panel" class="fixed inset-0 z-[110] bg-slate-50 hidden flex flex-col p-6 overflow-y-auto">
+        <div class="flex justify-between mb-6">
+            <h2 class="text-2xl font-black italic">GERENCIAR LOJA</h2>
+            <button onclick="location.reload()" class="p-2"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <div class="space-y-4 bg-white p-6 rounded-3xl shadow-sm border">
+            <input type="text" id="p-name" placeholder="Nome do Produto" class="w-full p-4 bg-slate-100 rounded-xl border-none">
+            <input type="number" id="p-price" placeholder="Preço" class="w-full p-4 bg-slate-100 rounded-xl border-none">
+            
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 px-1 uppercase">Foto do Aparelho</label>
+                <input type="file" id="p-file" accept="image/*" class="w-full p-3 bg-slate-100 rounded-xl text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white">
+                <p class="text-[9px] text-slate-400">*A foto será convertida para salvar localmente.</p>
+            </div>
+
+            <textarea id="p-desc" placeholder="Descrição Técnica" class="w-full p-4 bg-slate-100 rounded-xl h-24 border-none"></textarea>
+            <button onclick="saveProduct()" class="w-full bg-blue-700 text-white py-4 rounded-xl font-bold">PUBLICAR NO SITE</button>
+        </div>
+        <div id="admin-list" class="mt-8 space-y-3"></div>
+    </div>
+
+    <script>
+        const WHATSAPP = "5573998630214";
+        const ADMIN_USER = "smartmaxx";
+        const ADMIN_PASS = "Cb593713@@";
+        
+        let cart = [];
+        let viewQty = 1;
+        let selectedProduct = null;
+        let products = JSON.parse(localStorage.getItem('smartmaxx_db_v6')) || [];
+
+        // --- SISTEMA DE IMAGEM ---
+        function getBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // --- ADMIN ---
+        function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
+        
+        function handleLogin() {
+            if(document.getElementById('login-user').value === ADMIN_USER && document.getElementById('login-pass').value === ADMIN_PASS) {
+                document.getElementById('auth-modal').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                renderAdminList();
+            } else { alert("Acesso negado!"); }
+        }
+
+        async function saveProduct() {
+            const name = document.getElementById('p-name').value;
+            const price = parseFloat(document.getElementById('p-price').value);
+            const desc = document.getElementById('p-desc').value;
+            const fileInput = document.getElementById('p-file');
+            
+            let imgData = "https://via.placeholder.com/300?text=Sem+Foto";
+            
+            if(fileInput.files.length > 0) {
+                imgData = await getBase64(fileInput.files[0]);
+            }
+
+            if(!name || !price) return alert("Preencha Nome e Preço!");
+            
+            products.push({ id: Date.now(), name, price, image: imgData, desc });
+            localStorage.setItem('smartmaxx_db_v6', JSON.stringify(products));
+            
+            alert("Produto Publicado!");
+            renderProducts(); renderAdminList();
+            document.getElementById('p-name').value = "";
+            document.getElementById('p-price').value = "";
+            document.getElementById('p-file').value = "";
+        }
+
+        function deleteProduct(id) {
+            products = products.filter(p => p.id !== id);
+            localStorage.setItem('smartmaxx_db_v6', JSON.stringify(products));
+            renderProducts(); renderAdminList();
+        }
+
+        function renderAdminList() {
+            document.getElementById('admin-list').innerHTML = `
+                <h3 class="font-bold text-slate-500 text-xs uppercase mb-2">Produtos Ativos</h3>
+                ${products.map(p => `
+                    <div class="bg-white p-4 rounded-2xl flex justify-between items-center border shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <img src="${p.image}" class="w-8 h-8 rounded-lg object-cover">
+                            <span class="text-xs font-bold">${p.name}</span>
+                        </div>
+                        <button onclick="deleteProduct(${p.id})" class="text-red-500 p-2"><i class="fas fa-trash"></i></button>
+                    </div>
+                `).join('')}`;
+        }
+
+        // --- CATALOGO ---
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            if(products.length === 0) {
+                grid.innerHTML = `<div class="col-span-2 text-center py-20 text-slate-400">Nenhum produto cadastrado.</div>`;
+                return;
+            }
+            grid.innerHTML = products.map(p => `
+                <div onclick="openProductPage(${p.id})" class="bg-white p-3 rounded-[32px] shadow-sm active:scale-95 transition-all">
+                    <div class="aspect-square bg-slate-50 rounded-[24px] mb-3 flex items-center justify-center overflow-hidden">
+                        <img src="${p.image}" class="max-h-full object-contain">
+                    </div>
+                    <h3 class="text-[11px] font-black text-slate-800 uppercase px-1 line-clamp-2 h-7">${p.name}</h3>
+                    <div class="flex justify-between items-center mt-2 px-1">
+                        <span class="text-blue-700 font-black text-sm">R$ ${p.price.toLocaleString('pt-BR')}</span>
+                        <div class="w-7 h-7 bg-blue-700 text-white rounded-full flex items-center justify-center text-[10px]"><i class="fas fa-plus"></i></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- PDP ---
+        function openProductPage(id) {
+            selectedProduct = products.find(p => p.id === id);
+            viewQty = 1;
+            document.getElementById('view-img').src = selectedProduct.image;
+            document.getElementById('view-title').innerText = selectedProduct.name;
+            document.getElementById('view-price').innerText = `R$ ${selectedProduct.price.toLocaleString('pt-BR')}`;
+            document.getElementById('view-desc').innerText = selectedProduct.desc || "Produto lacrado com garantia SmartMaxx.";
+            document.getElementById('view-qty').innerText = viewQty;
+            document.getElementById('add-to-cart-btn').onclick = () => addToCart(selectedProduct.id, viewQty);
+            const page = document.getElementById('product-page');
+            page.classList.remove('hidden');
+            setTimeout(() => page.classList.add('active'), 10);
+        }
+
+        function closeProductPage() {
+            const page = document.getElementById('product-page');
+            page.classList.remove('active');
+            setTimeout(() => page.classList.add('hidden'), 300);
+        }
+
+        function changeViewQty(d) {
+            viewQty = Math.max(1, viewQty + d);
+            document.getElementById('view-qty').innerText = viewQty;
+        }
+
+        function addToCart(id, qty) {
+            const prod = products.find(p => p.id === id);
+            const inCart = cart.find(i => i.id === id);
+            if(inCart) inCart.qty += qty; else cart.push({...prod, qty: qty});
+            updateCartUI(); closeProductPage(); toggleCart();
+        }
+
+        // --- CARRINHO ---
+        function updateCartUI() {
+            const count = cart.reduce((a, b) => a + b.qty, 0);
+            const total = cart.reduce((a, b) => a + (b.price * b.qty), 0);
+            document.getElementById('cart-count').innerText = count;
+            document.getElementById('cart-count').classList.toggle('hidden', count === 0);
+            document.getElementById('cart-total').innerText = `R$ ${total.toLocaleString('pt-BR')}`;
+            const list = document.getElementById('cart-items-list');
+            list.innerHTML = cart.map(i => `
+                <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl">
+                    <img src="${i.image}" class="w-12 h-12 object-contain bg-white rounded-lg">
+                    <div class="flex-1">
+                        <div class="text-[10px] font-black text-slate-800 uppercase">${i.name}</div>
+                        <div class="text-blue-600 font-bold text-xs">R$ ${i.price.toLocaleString('pt-BR')}</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="changeCartQty(${i.id},-1)" class="w-6 h-6 bg-white rounded-full shadow-sm text-xs font-bold">-</button>
+                        <span class="text-xs font-black">${i.qty}</span>
+                        <button onclick="changeCartQty(${i.id},1)" class="w-6 h-6 bg-white rounded-full shadow-sm text-xs font-bold text-blue-600">+</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function changeCartQty(id, d) {
+            const i = cart.find(x => x.id === id);
+            i.qty += d;
+            if(i.qty <= 0) cart = cart.filter(x => x.id !== id);
+            updateCartUI();
+        }
+
+        function toggleCart() {
+            const m = document.getElementById('cart-modal');
+            const c = m.querySelector('.modal-up');
+            if(m.classList.contains('hidden')){
+                m.classList.remove('hidden');
+                setTimeout(() => { m.classList.add('opacity-100'); c.classList.add('active'); }, 10);
+            } else {
+                m.classList.remove('opacity-100'); c.classList.remove('active');
+                setTimeout(() => m.classList.add('hidden'), 300);
+            }
+        }
+
+        function finishOrder() {
+            const addr = document.getElementById('c-addr').value;
+            if(!addr) return alert("Informe o endereço!");
+            let msg = `*🛍️ PEDIDO SMARTMAXX*%0A%0A*📍 ENDEREÇO:* ${addr}%0A*💳 PAGAMENTO:* ${document.getElementById('c-pay').value}%0A%0A*ITENS:*%0A`;
+            cart.forEach(i => { msg += `• ${i.qty}x ${i.name}%0A`; });
+            const total = cart.reduce((a, b) => a + (b.price * b.qty), 0);
+            msg += `%0A*TOTAL: R$ ${total.toLocaleString('pt-BR')}*`;
+            window.open(`https://wa.me/${WHATSAPP}?text=${msg}`);
+        }
+
+        renderProducts();
+    </script>
+</body>
+</html>
